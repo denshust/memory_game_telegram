@@ -1,40 +1,51 @@
-// Ініціалізація Telegram Web App
 const tg = window.Telegram.WebApp;
-tg.expand(); // Розгортаємо гру на весь екран
-tg.ready();  // Повідомляємо Telegram, що додаток готовий
+tg.expand();
 
-// Набір карток (пари)
-const cardsArray = ['🍎', '🍎', '🍌', '🍌', '🍇', '🍇', '🍉', '🍉', '🍓', '🍓', '🍒', '🍒'];
+const gameBoard = document.getElementById('game-board');
+
+// Створюємо масив з номерами картинок (від 1 до 25) по два рази
+let cardsIcons = [];
+for (let i = 1; i <= 25; i++) {
+    cardsIcons.push(i, i);
+}
+
+// Перемішуємо
+cardsIcons.sort(() => 0.5 - Math.random());
+
 let hasFlippedCard = false;
 let lockBoard = false;
 let firstCard, secondCard;
 let matches = 0;
 
-const gameBoard = document.getElementById('game-board');
-
-// Перемішування масиву
-function shuffle(array) {
-    array.sort(() => 0.5 - Math.random());
-}
-
-// Створення ігрового поля
 function createBoard() {
-    shuffle(cardsArray);
-    cardsArray.forEach(item => {
-        const card = document.createElement('div');
-        card.classList.add('memory-card');
-        card.dataset.emoji = item;
+    let cardIndex = 0;
 
-        card.innerHTML = `
-            <div class="front-face">${item}</div>
-            <div class="back-face">❓</div>
-        `;
-        card.addEventListener('click', flipCard);
-        gameBoard.appendChild(card);
-    });
+    // Цикл на 54 ітерації (9x6)
+    for (let i = 1; i <= 54; i++) {
+        const item = document.createElement('div');
+
+        // Перевірка, чи це кут (1-ша, 9-та, 46-та або 54-та клітинка)
+        if (i === 1 || i === 9 || i === 46 || i === 54) {
+            item.classList.add('spacer');
+        } else {
+            // Це звичайна картка
+            const iconNum = cardsIcons[cardIndex];
+            item.classList.add('memory-card');
+            item.dataset.icon = iconNum;
+
+            item.innerHTML = `
+                <div class="front-face">
+                    <img src="images/${iconNum}.png" alt="card">
+                </div>
+                <div class="back-face">?</div>
+            `;
+            item.addEventListener('click', flipCard);
+            cardIndex++;
+        }
+        gameBoard.appendChild(item);
+    }
 }
 
-// Логіка перевертання картки
 function flipCard() {
     if (lockBoard) return;
     if (this === firstCard) return;
@@ -42,56 +53,44 @@ function flipCard() {
     this.classList.add('flip');
 
     if (!hasFlippedCard) {
-        // Перший клік
         hasFlippedCard = true;
         firstCard = this;
         return;
     }
 
-    // Другий клік
     secondCard = this;
     checkForMatch();
 }
 
-// Перевірка на збіг
 function checkForMatch() {
-    let isMatch = firstCard.dataset.emoji === secondCard.dataset.emoji;
+    let isMatch = firstCard.dataset.icon === secondCard.dataset.icon;
     isMatch ? disableCards() : unflipCards();
 }
 
-// Якщо картки збіглися
 function disableCards() {
     firstCard.removeEventListener('click', flipCard);
     secondCard.removeEventListener('click', flipCard);
-    resetBoard();
     matches += 2;
-    
-    // Перевірка на перемогу
-    if (matches === cardsArray.length) {
+    if (matches === 50) {
         setTimeout(() => {
-            // Використовуємо нативне спливаюче вікно Telegram
-            tg.showAlert('Вітаю! Ти знайшов усі пари! 🎉', () => {
-                tg.close(); // Закриваємо міні-апп після натискання "ОК"
-            });
+            tg.showAlert('Перемога! Всі пари знайдено!');
         }, 500);
     }
+    resetBoard();
 }
 
-// Якщо картки різні — перевертаємо назад
 function unflipCards() {
-    lockBoard = true; // Блокуємо поле на час анімації
+    lockBoard = true;
     setTimeout(() => {
         firstCard.classList.remove('flip');
         secondCard.classList.remove('flip');
         resetBoard();
-    }, 1000);
+    }, 800);
 }
 
-// Скидання змінних
 function resetBoard() {
     [hasFlippedCard, lockBoard] = [false, false];
     [firstCard, secondCard] = [null, null];
 }
 
-// Запуск гри
 createBoard();
