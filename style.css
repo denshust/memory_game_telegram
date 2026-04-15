@@ -1,0 +1,56 @@
+* { box-sizing: border-box; }
+
+body {
+    margin: 0; 
+    padding: 20px;
+    background-color: var(--tg-theme-bg-color, #f4f4f4); 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    min-height: 100vh;
+    font-family: sans-serif;
+    user-select: none; /* Забороняємо виділення тексту */
+}
+
+.memory-game {
+    width: 100%; 
+    max-width: 400px;
+    display: grid; 
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 10px;
+}
+
+.memory-card {
+    aspect-ratio: 3/4; 
+    position: relative; 
+    cursor: pointer;
+    transform-style: preserve-3d; 
+    transition: transform 0.4s;
+}
+
+.memory-card.flip { 
+    transform: rotateY(180deg); 
+}
+
+.front-face, .back-face {
+    width: 100%; 
+    height: 100%; 
+    position: absolute; 
+    border-radius: 8px;
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    font-size: 40px;
+    backface-visibility: hidden;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.front-face { 
+    background: #fff; 
+    transform: rotateY(180deg); 
+}
+
+.back-face { 
+    background: var(--tg-theme-button-color, #2481cc); 
+    color: var(--tg-theme-button-text-color, #fff);
+}
